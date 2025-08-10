@@ -19,6 +19,11 @@ app.use(express.json());
 // 정적 파일 제공 (public 폴더)
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 루트 경로 라우트 추가 ← 이 부분 추가!
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // 기본 테스트 API
 app.get('/api/test', (req, res) => {
   res.json({ success: true, message: 'API is working fine!' });
@@ -285,4 +290,5 @@ app.listen(PORT, '0.0.0.0', () => {
   
   // 서버 시작 후 초기화
   initializeServer();
+
 });
