@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗞️ 홍콩 경제 뉴스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .controls select, .controls button, .controls input {
+            padding: 10px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .controls select:hover, .controls button:hover, .controls input:focus {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .controls button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+        
+        .controls button:hover {
+            background: linear-gradient(45deg, #5a67d8, #6b46c1);
+        }
+        
+        input[type="text"] {
+            flex: 2;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin: 50px 0;
+        }
+        
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .news-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            border-left: 5px solid;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .news-card.hk { border-left-color: #e53e3e; }
+        .news-card.china { border-left-color: #dd6b20; }
+        .news-card.global { border-left-color: #3182ce; }
+        
+        .news-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .source-info {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .source {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .source.premium { background: #d69e2e; }
+        .source.mainland { background: #e53e3e; }
+        .source.government { background: #38a169; }
+        
+        .category {
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .economic-impact {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .economic-impact.high {
+            background: #fed7d7;
+            color: #c53030;
+        }
+        
+        .economic-impact.medium {
+            background: #feebc8;
+            color: #c05621;
+        }
+        
+        .economic-impact.low {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .news-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            color: #2d3748;
+        }
+        
+        .news-summary {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .tag {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        
+        .news-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .timestamp {
+            color: #718096;
+            font-size: 13px;
+        }
+        
+        .read-more {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+            transition: color 0.3s ease;
+        }
+        
+        .read-more:hover {
+            color: #5a67d8;
+        }
+        
+        .stats {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .stats h3 {
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        mark {
+            background: #ffd700 !important;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .news-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗞️ 홍콩 경제 뉴스</h1>
+            <p>홍콩·중국·글로벌 경제 최신 동향</p>
+        </div>
+        
+        <div class="controls">
+            <input type="text" id="keywordSearch" placeholder="키워드 검색 (예: hongkong, china, trade, finance...)" 
+                   style="flex: 2; padding: 10px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 14px;">
+            
+            <select id="categoryFilter">
+                <option value="">전체 카테고리</option>
+            </select>
+            
+            <select id="sourceFilter">
+                <option value="">전체 소스</option>
+            </select>
+            
+            <select id="sourceTypeFilter">
+                <option value="">소스 타입</option>
+                <option value="hk_media">홍콩 매체</option>
+                <option value="global">글로벌</option>
+                <option value="government">정부</option>
+                <option value="china_media">중국 매체</option>
+            </select>
+            
+            <select id="impactFilter">
+                <option value="">영향도</option>
+                <option value="high">고영향</option>
+                <option value="medium">중영향</option>
+                <option value="low">저영향</option>
+            </select>
+            
+            <button onclick="searchNews()">검색</button>
+            <button onclick="clearFilters()">초기화</button>
+            <button onclick="loadDailyBriefing()">전체 뉴스</button>
+        </div>
+        
+        <div class="stats" id="statsContainer" style="display: none;">
+            <h3 id="statsText">뉴스 통계</h3>
+            <div id="keywordHighlight" style="margin-top: 10px; font-size: 14px; color: #667eea;"></div>
+        </div>
+        
+        <div class="loading" id="loading">뉴스를 불러오는 중...</div>
+        <div class="news-grid" id="newsContainer"></div>
+    </div>
+
+    <script>
+        let allNews = [];
+        
+        // 페이지 로드시 일일 브리핑 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadSources();
+            loadDailyBriefing();
+        });
+        
+        // 카테고리 목록 로드
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+                const select = document.getElementById('categoryFilter');
+                
+                data.data.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('카테고리 로드 실패:', error);
+            }
+        }
+        
+        // 소스 목록 로드
+        async function loadSources() {
+            try {
+                const response = await fetch('/api/sources');
+                const data = await response.json();
+                const select = document.getElementById('sourceFilter');
+                
+                data.data.forEach(source => {
+                    const option = document.createElement('option');
+                    option.value = source;
+                    option.textContent = source;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('소스 로드 실패:', error);
+            }
+        }
+        
+        // 일일 브리핑 로드
+        async function loadDailyBriefing() {
+            showLoading();
+            try {
+                const response = await fetch('/api/news/daily-briefing');
+                const data = await response.json();
+                allNews = data.data;
+                displayNews(allNews);
+                showStats(data.count);
+            } catch (error) {
+                console.error('뉴스 로드 실패:', error);
+                hideLoading();
+            }
+        }
+        
+        // 키워드 검색 기능
+        async function searchNews() {
+            showLoading();
+            
+            const keyword = document.getElementById('keywordSearch').value.trim();
+            const category = document.getElementById('categoryFilter').value;
+            const source = document.getElementById('sourceFilter').value;
+            const sourceType = document.getElementById('sourceTypeFilter').value;
+            const impact = document.getElementById('impactFilter').value;
+            
+            try {
+                const response = await fetch('/api/news/daily-briefing');
+                const data = await response.json();
+                
+                let filteredNews = data.data;
+                
+                // 키워드 필터링
+                if (keyword) {
+                    filteredNews = filteredNews.filter(news => {
+                        const searchText = (news.title + ' ' + news.summary + ' ' + news.tags.join(' ')).toLowerCase();
+                        return searchText.includes(keyword.toLowerCase());
+                    });
+                }
+                
+                // 카테고리 필터링
+                if (category) {
+                    filteredNews = filteredNews.filter(news => 
+                        news.category.toLowerCase() === category.toLowerCase()
+                    );
+                }
+                
+                // 소스 필터링
+                if (source) {
+                    filteredNews = filteredNews.filter(news => 
+                        news.source.toLowerCase().includes(source.toLowerCase())
+                    );
+                }
+                
+                // 소스 타입 필터링
+                if (sourceType) {
+                    filteredNews = filteredNews.filter(news => 
+                        news.sourceType === sourceType.toLowerCase()
+                    );
+                }
+                
+                // 영향도 필터링
+                if (impact) {
+                    filteredNews = filteredNews.filter(news => 
+                        news.economicImpact === impact.toLowerCase()
+                    );
+                }
+                
+                // 최신순 정렬
+                filteredNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+                
+                displayNews(filteredNews);
+                showStats(filteredNews.length, data.data.length, keyword);
+                
+            } catch (error) {
+                console.error('뉴스 검색 실패:', error);
+                hideLoading();
+            }
+        }
+        
+        // 필터 초기화
+        function clearFilters() {
+            document.getElementById('keywordSearch').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('sourceFilter').value = '';
+            document.getElementById('sourceTypeFilter').value = '';
+            document.getElementById('impactFilter').value = '';
+            loadDailyBriefing();
+        }
+        
+        // 뉴스 표시 (키워드 하이라이트 포함)
+        function displayNews(newsArray) {
+            const container = document.getElementById('newsContainer');
+            const keyword = document.getElementById('keywordSearch').value.trim().toLowerCase();
+            hideLoading();
+            
+            if (newsArray.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: white; font-size: 1.2em;">해당 조건의 뉴스가 없습니다.</div>';
+                return;
+            }
+            
+            container.innerHTML = newsArray.map(news => {
+                const cardClass = getCardClass(news);
+                const sourceClass = getSourceClass(news.sourceType);
+                
+                // 키워드 하이라이트 처리
+                let highlightedTitle = news.title;
+                let highlightedSummary = news.summary;
+                
+                if (keyword) {
+                    const regex = new RegExp(`(${keyword})`, 'gi');
+                    highlightedTitle = news.title.replace(regex, '<mark style="background: #ffd700; padding: 2px 4px; border-radius: 3px;">$1</mark>');
+                    highlightedSummary = news.summary.replace(regex, '<mark style="background: #ffd700; padding: 2px 4px; border-radius: 3px;">$1</mark>');
+                }
+                
+                return `
+                    <div class="news-card ${cardClass}">
+                        <div class="news-header">
+                            <div class="source-info">
+                                <span class="source ${sourceClass}">${news.source}</span>
+                                <span class="category">${news.category}</span>
+                                ${news.subCategory ? `<span class="category">${news.subCategory}</span>` : ''}
+                            </div>
+                            <div class="impact">
+                                <span class="economic-impact ${news.economicImpact}">${getImpactText(news.economicImpact)}</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="news-title">${highlightedTitle}</h3>
+                        <p class="news-summary">${highlightedSummary}</p>
+                        
+                        <div class="tags">
+                            ${news.tags.map(tag => {
+                                let highlightedTag = tag;
+                                if (keyword) {
+                                    const regex = new RegExp(`(${keyword})`, 'gi');
+                                    highlightedTag = tag.replace(regex, '<mark style="background: #ffd700;">$1</mark>');
+                                }
+                                return `<span class="tag">#${highlightedTag}</span>`;
+                            }).join('')}
+                        </div>
+                        
+                        <div class="news-footer">
+                            <span class="timestamp">${formatDate(news.publishedAt)}</span>
+                            <a href="${news.url}" target="_blank" class="read-more">원문 보기 →</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 카드 클래스 결정
+        function getCardClass(news) {
+            if (news.subCategory === '홍콩' || news.source === 'SCMP') return 'hk';
+            if (news.sourceType === 'china_media' || news.subCategory === '중국본토') return 'china';
+            if (news.sourceType === 'government') return 'hk';
+            return 'global';
+        }
+        
+        // 영향도 텍스트 반환
+        function getImpactText(impact) {
+            switch(impact) {
+                case 'high': return '🔴 고영향';
+                case 'medium': return '🟡 중영향';
+                case 'low': return '🟢 저영향';
+                default: return '⚪ 일반';
+            }
+        }
+        
+        // 소스 클래스 결정
+        function getSourceClass(type) {
+            switch(type) {
+                case 'hk_media': return 'premium';
+                case 'china_media': return 'mainland';
+                case 'government': return 'government';
+                case 'global': return 'free';
+                default: return 'free';
+            }
+        }
+        
+        // 날짜 포맷팅
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffHours = Math.floor((now - date) / (1000 * 60 * 60));
+            
+            if (diffHours < 1) return '방금 전';
+            if (diffHours < 24) return `${diffHours}시간 전`;
+            
+            return date.toLocaleDateString('ko-KR', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // 통계 표시 (키워드 강조 포함)
+        function showStats(count, total = null, keyword = null) {
+            const statsContainer = document.getElementById('statsContainer');
+            const statsText = document.getElementById('statsText');
+            const keywordHighlight = document.getElementById('keywordHighlight');
+            
+            if (total !== null) {
+                statsText.textContent = `총 ${total}개 뉴스 중 ${count}개 표시`;
+            } else {
+                statsText.textContent = `총 ${count}개 뉴스`;
+            }
+            
+            // 키워드 강조 표시
+            if (keyword) {
+                keywordHighlight.innerHTML = `🔍 "<strong>${keyword}</strong>" 검색 결과`;
+                keywordHighlight.style.display = 'block';
+            } else {
+                keywordHighlight.style.display = 'none';
+            }
+            
+            statsContainer.style.display = 'block';
+        }
+        
+        // 로딩 표시/숨김
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('newsContainer').innerHTML = '';
+            document.getElementById('statsContainer').style.display = 'none';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        // 키워드 입력시 실시간 검색
+        document.getElementById('keywordSearch').addEventListener('input', function() {
+            const keyword = this.value.trim();
+            if (keyword.length >= 2) {
+                setTimeout(searchNews, 300);
+            } else if (keyword.length === 0) {
+                loadDailyBriefing();
+            }
+        });
+        
+        // 엔터키로 검색
+        document.getElementById('keywordSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchNews();
+            }
+        });
+        
+        // 필터 변경시 자동 검색
+        document.getElementById('categoryFilter').addEventListener('change', searchNews);
+        document.getElementById('sourceFilter').addEventListener('change', searchNews);
+        document.getElementById('sourceTypeFilter').addEventListener('change', searchNews);
+        document.getElementById('impactFilter').addEventListener('change', searchNews);
+    </script>
+</body>
+</html>
